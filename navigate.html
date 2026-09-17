@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigate to Survey Point</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 25px;
+            background: white;
+            color: #222;
+        }
+
+        h1 {
+            font-size: 26px;
+            margin-bottom: 5px;
+        }
+
+        #pointName {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+
+        #distance {
+            font-size: 52px;
+            font-weight: bold;
+            margin: 20px 0 5px 0;
+        }
+
+        #bearing {
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+
+        #arrow {
+            font-size: 100px;
+            line-height: 1;
+            margin: 15px;
+            transition: transform 0.3s;
+        }
+
+        #accuracy {
+            font-size: 15px;
+            color: #555;
+            margin-top: 20px;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 17px;
+        }
+
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 13px 22px;
+            border-radius: 7px;
+            font-size: 17px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Survey Point Navigation</h1>
+
+    <div id="pointName"></div>
+
+    <button onclick="startNavigation()">
+        📍 Start Navigation
+    </button>
+
+    <div id="status">
+        Press Start Navigation to use your phone's GPS.
+    </div>
+
+    <div id="distance"></div>
+    <div id="arrow">↑</div>
+    <div id="bearing"></div>
+    <div id="accuracy"></div>
+
+<script>
+
+const params = new URLSearchParams(window.location.search);
+
+const targetLat = parseFloat(params.get("lat"));
+const targetLon = parseFloat(params.get("lon"));
+const point = params.get("point") || "Control Point";
+
+document.getElementById("pointName").innerText =
+    "Point " + point;
+
+function radians(degrees) {
+    return degrees * Math.PI / 180;
+}
+
+function degrees(radians) {
+    return radians * 180 / Math.PI;
+}
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+
+    const R = 6371000;
+
+    const p1 = radians(lat1);
+    const p2 = radians(lat2);
+
+    const dp = radians(lat2 - lat1);
+    const dl = radians(lon2 - lon1);
+
+    const a =
+        Math.sin(dp / 2) * Math.sin(dp / 2) +
+        Math.cos(p1) *
+        Math.cos(p2) *
+        Math.sin(dl / 2) *
+        Math.sin(dl / 2);
+
+    return R * 2 * Math.atan2(
+        Math.sqrt(a),
+        Math.sqrt(1 - a)
+    );
+}
+
+function calculateBearing(lat1, lon1, lat2, lon2) {
+
+    const p1 = radians(lat1);
+    const p2 = radians(lat2);
+
+    const dl = radians(lon2 - lon1);
+
+    const y = Math.sin(dl) * Math.cos(p2);
+
+    const x =
+        Math.cos(p1) * Math.sin(p2) -
+        Math.sin(p1) *
+        Math.cos(p2) *
+        Math.cos(dl);
+
+    return (degrees(Math.atan2(y, x)) + 360) % 360;
+}
+
+function directionName(bearing) {
+
+    const directions = [
+        "N", "NE", "E", "SE",
+        "S", "SW", "W", "NW"
+    ];
+
+    return directions[
+        Math.round(bearing / 45) % 8
+    ];
+}
+
+function updatePosition(position) {
+
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+
+    const distance =
+        calculateDistance(
+            lat,
+            lon,
+            targetLat,
+            targetLon
+        );
+
+    const bearing =
+        calculateBearing(
+            lat,
+            lon,
+            targetLat,
+            targetLon
+        );
+
+    let distanceText;
+
+    if (distance < 1000) {
+        distanceText = Math.round(distance) + " m";
+    } else {
+        distanceText =
+            (distance / 1000).toFixed(2) + " km";
+    }
+
+    document.getElementById("status").innerText =
+        "Navigation active";
+
+    document.getElementById("distance").innerText =
+        distanceText;
+
+    document.getElementById("bearing").innerText =
+        Math.round(bearing) +
+        "° " +
+        directionName(bearing);
+
+    document.getElementById("arrow").style.transform =
+        "rotate(" + bearing + "deg)";
+
+    document.getElementById("accuracy").innerText =
+        "GPS accuracy: ±" +
+        Math.round(position.coords.accuracy) +
+        " m";
+}
+
+function locationError(error) {
+
+    document.getElementById("status").innerText =
+        "Unable to obtain your location. Check that location permission is enabled.";
+}
+
+function startNavigation() {
+
+    if (!navigator.geolocation) {
+
+        document.getElementById("status").innerText =
+            "GPS location is not supported by this device.";
+
+        return;
+    }
+
+    document.getElementById("status").innerText =
+        "Getting your location...";
+
+    navigator.geolocation.watchPosition(
+        updatePosition,
+        locationError,
+        {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 15000
+        }
+    );
+}
+
+</script>
+
+</body>
+</html>
