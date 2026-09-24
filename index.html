@@ -33,7 +33,7 @@
         }
 
         #pointName {
-            font-size: 30px;
+            font-size: 32px;
             font-weight: bold;
             margin: 10px 0 15px 0;
         }
@@ -51,47 +51,30 @@
             cursor: pointer;
         }
 
+        .direction-label {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
         .compass {
             width: 250px;
             height: 250px;
-            margin: 15px auto 20px auto;
+            margin: 5px auto 20px auto;
             border: 5px solid #333;
             border-radius: 50%;
             position: relative;
             background: #fafafa;
         }
 
-        .north,
-        .east,
-        .south,
-        .west {
+        .forward-marker {
             position: absolute;
-            font-size: 18px;
+            top: 7px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 25px;
             font-weight: bold;
-        }
-
-        .north {
-            top: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .south {
-            bottom: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .east {
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .west {
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
         }
 
         #arrow {
@@ -123,13 +106,19 @@
         }
 
         .instruction {
-            font-size: 20px;
+            font-size: 21px;
             font-weight: bold;
             margin: 10px 0;
         }
 
+        .subinstruction {
+            font-size: 16px;
+            margin: 5px 0 15px 0;
+            color: #555;
+        }
+
         #distance {
-            font-size: 40px;
+            font-size: 42px;
             font-weight: bold;
             margin: 12px 0;
         }
@@ -184,12 +173,13 @@
         🧭 Start Navigation
     </button>
 
+    <div class="direction-label">
+        TOP OF PHONE
+    </div>
+
     <div class="compass">
 
-        <div class="north">N</div>
-        <div class="east">E</div>
-        <div class="south">S</div>
-        <div class="west">W</div>
+        <div class="forward-marker">▲</div>
 
         <div id="arrow"></div>
 
@@ -198,7 +188,11 @@
     </div>
 
     <div class="instruction">
-        Walk towards the orange arrow
+        Turn until the orange arrow points up
+    </div>
+
+    <div class="subinstruction">
+        Then walk forwards towards the control point
     </div>
 
     <div id="distance">
@@ -242,7 +236,9 @@
         It can vary considerably with the device, satellite visibility,
         buildings, trees and other surroundings.
         <br><br>
-        Compare the phone result with the survey GNSS equipment.
+
+        Compare the phone's position and reported accuracy with the
+        position obtained using the survey GNSS equipment.
     </div>
 
 </div>
@@ -556,12 +552,12 @@ function updatePosition(
     if (phoneHeading === null) {
 
         status.textContent =
-            "GPS active — waiting for compass...";
+            "GPS active — waiting for phone direction...";
 
     } else {
 
         status.textContent =
-            "GPS and compass active";
+            "GPS and phone direction active";
     }
 }
 
@@ -607,14 +603,6 @@ function orientationHandler(
     event
 ) {
 
-    /*
-        iPhone Safari normally supplies
-        webkitCompassHeading.
-
-        On other compatible devices we
-        use alpha to calculate heading.
-    */
-
     if (
         typeof event.webkitCompassHeading
         === "number"
@@ -633,18 +621,8 @@ function orientationHandler(
         === "number"
     ) {
 
-        let heading;
-
-        if (event.absolute) {
-
-            heading =
-                360 - event.alpha;
-
-        } else {
-
-            heading =
-                360 - event.alpha;
-        }
+        const heading =
+            360 - event.alpha;
 
         processHeading(
             heading
@@ -695,12 +673,6 @@ async function startNavigation() {
     }
 
 
-    /*
-        iPhone / iPad requires the user
-        to grant motion and orientation
-        permission from a button press.
-    */
-
     if (
         typeof DeviceOrientationEvent
         !== "undefined" &&
@@ -730,13 +702,13 @@ async function startNavigation() {
             } else {
 
                 status.textContent =
-                    "Compass permission was not granted.";
+                    "Phone direction permission was not granted.";
             }
 
         } catch (error) {
 
             status.textContent =
-                "Unable to start the phone compass.";
+                "Unable to start phone direction sensor.";
         }
 
     } else {
@@ -763,7 +735,7 @@ async function startNavigation() {
 
 
     status.textContent =
-        "Starting GPS and compass...";
+        "Starting GPS and phone direction...";
 }
 
 
