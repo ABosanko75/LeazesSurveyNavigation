@@ -2,235 +2,676 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Navigate to Survey Point</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Survey Point Navigator</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
             margin: 0;
-            padding: 25px;
-            background: white;
+            padding: 18px;
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
             color: #222;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            padding: 22px;
+            border-radius: 16px;
         }
 
         h1 {
-            font-size: 26px;
-            margin-bottom: 5px;
+            font-size: 25px;
+            margin: 0 0 8px 0;
         }
 
         #pointName {
-            font-size: 22px;
+            font-size: 30px;
             font-weight: bold;
-            margin-bottom: 25px;
+            margin: 10px 0 15px 0;
         }
 
-        #distance {
-            font-size: 52px;
+        #startButton {
+            width: 100%;
+            padding: 16px;
+            margin: 8px 0 20px 0;
+            font-size: 19px;
             font-weight: bold;
-            margin: 20px 0 5px 0;
+            background: #ff7900;
+            color: #111;
+            border: 2px solid #111;
+            border-radius: 10px;
+            cursor: pointer;
         }
 
-        #bearing {
-            font-size: 26px;
-            margin-bottom: 15px;
+        .compass {
+            width: 250px;
+            height: 250px;
+            margin: 15px auto 20px auto;
+            border: 5px solid #333;
+            border-radius: 50%;
+            position: relative;
+            background: #fafafa;
+        }
+
+        .north,
+        .east,
+        .south,
+        .west {
+            position: absolute;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .north {
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .south {
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .east {
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .west {
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
         #arrow {
-            font-size: 100px;
-            line-height: 1;
-            margin: 15px;
-            transition: transform 0.3s;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 0;
+            height: 0;
+
+            border-left: 28px solid transparent;
+            border-right: 28px solid transparent;
+            border-bottom: 105px solid #ff7900;
+
+            transform-origin: 50% 100%;
+            transform: translate(-50%, -100%) rotate(0deg);
+
+            transition: transform 0.15s linear;
+        }
+
+        .centre-dot {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #222;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .instruction {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        #distance {
+            font-size: 40px;
+            font-weight: bold;
+            margin: 12px 0;
         }
 
         #accuracy {
-            font-size: 15px;
-            color: #555;
-            margin-top: 20px;
+            font-size: 23px;
+            font-weight: bold;
+            padding: 12px;
+            margin: 15px 0;
+            background: #eeeeee;
+            border-radius: 10px;
         }
 
         #status {
-            margin-top: 20px;
-            font-size: 17px;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 15px 0;
         }
 
-        button {
-            background: #0066cc;
-            color: white;
-            border: none;
-            padding: 13px 22px;
-            border-radius: 7px;
-            font-size: 17px;
-            cursor: pointer;
-            margin-top: 15px;
+        .data {
+            margin-top: 20px;
+            padding: 15px;
+            text-align: left;
+            background: #f2f2f2;
+            border-radius: 10px;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+
+        .teaching-note {
+            margin-top: 20px;
+            padding: 12px;
+            border: 1px solid #bbb;
+            border-radius: 10px;
+            font-size: 14px;
+            text-align: left;
         }
     </style>
 </head>
 
 <body>
 
-    <h1>Survey Point Navigation</h1>
+<div class="container">
 
-    <div id="pointName"></div>
+    <h1>Phone GPS Navigation</h1>
 
-    <button onclick="startNavigation()">
-        📍 Start Navigation
-    </button>
-
-    <div id="status">
-        Press Start Navigation to use your phone's GPS.
+    <div id="pointName">
+        Survey Point
     </div>
 
-    <div id="distance"></div>
-    <div id="arrow">↑</div>
-    <div id="bearing"></div>
-    <div id="accuracy"></div>
+    <button id="startButton">
+        🧭 Start Navigation
+    </button>
+
+    <div class="compass">
+
+        <div class="north">N</div>
+        <div class="east">E</div>
+        <div class="south">S</div>
+        <div class="west">W</div>
+
+        <div id="arrow"></div>
+
+        <div class="centre-dot"></div>
+
+    </div>
+
+    <div class="instruction">
+        Walk towards the orange arrow
+    </div>
+
+    <div id="distance">
+        Waiting for GPS...
+    </div>
+
+    <div id="accuracy">
+        GPS accuracy: waiting...
+    </div>
+
+    <div id="status">
+        Press Start Navigation
+    </div>
+
+    <div class="data">
+
+        <strong>Target bearing:</strong>
+        <span id="bearing">--</span><br>
+
+        <strong>Phone heading:</strong>
+        <span id="heading">--</span><br>
+
+        <strong>Your latitude:</strong>
+        <span id="currentLat">--</span><br>
+
+        <strong>Your longitude:</strong>
+        <span id="currentLon">--</span><br>
+
+        <strong>Target latitude:</strong>
+        <span id="targetLat">--</span><br>
+
+        <strong>Target longitude:</strong>
+        <span id="targetLon">--</span>
+
+    </div>
+
+    <div class="teaching-note">
+        <strong>Phone GPS vs Survey GNSS</strong><br><br>
+
+        The accuracy shown above is the accuracy reported by this phone.
+        It can vary considerably with the device, satellite visibility,
+        buildings, trees and other surroundings.
+        <br><br>
+        Compare the phone result with the survey GNSS equipment.
+    </div>
+
+</div>
+
 
 <script>
 
-const params = new URLSearchParams(window.location.search);
+const params =
+    new URLSearchParams(
+        window.location.search
+    );
 
-const targetLat = parseFloat(params.get("lat"));
-const targetLon = parseFloat(params.get("lon"));
-const point = params.get("point") || "Control Point";
+const pointName =
+    params.get("point") ||
+    "Survey Point";
 
-document.getElementById("pointName").innerText =
-    "Point " + point;
+const targetLat =
+    parseFloat(
+        params.get("lat")
+    );
 
-function radians(degrees) {
-    return degrees * Math.PI / 180;
+const targetLon =
+    parseFloat(
+        params.get("lon")
+    );
+
+
+document.getElementById(
+    "pointName"
+).textContent = pointName;
+
+
+if (!isNaN(targetLat)) {
+
+    document.getElementById(
+        "targetLat"
+    ).textContent =
+        targetLat.toFixed(6);
 }
 
-function degrees(radians) {
-    return radians * 180 / Math.PI;
+
+if (!isNaN(targetLon)) {
+
+    document.getElementById(
+        "targetLon"
+    ).textContent =
+        targetLon.toFixed(6);
 }
 
-function calculateDistance(lat1, lon1, lat2, lon2) {
 
-    const R = 6371000;
+let currentLat = null;
+let currentLon = null;
 
-    const p1 = radians(lat1);
-    const p2 = radians(lat2);
+let targetBearing = 0;
+let phoneHeading = null;
 
-    const dp = radians(lat2 - lat1);
-    const dl = radians(lon2 - lon1);
+let lastArrowAngle = 0;
+
+
+const arrow =
+    document.getElementById(
+        "arrow"
+    );
+
+const status =
+    document.getElementById(
+        "status"
+    );
+
+const startButton =
+    document.getElementById(
+        "startButton"
+    );
+
+
+function toRadians(degrees) {
+
+    return degrees *
+        Math.PI / 180;
+}
+
+
+function toDegrees(radians) {
+
+    return radians *
+        180 / Math.PI;
+}
+
+
+function calculateDistance(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+) {
+
+    const earthRadius =
+        6371000;
+
+    const phi1 =
+        toRadians(lat1);
+
+    const phi2 =
+        toRadians(lat2);
+
+    const deltaPhi =
+        toRadians(
+            lat2 - lat1
+        );
+
+    const deltaLambda =
+        toRadians(
+            lon2 - lon1
+        );
 
     const a =
-        Math.sin(dp / 2) * Math.sin(dp / 2) +
-        Math.cos(p1) *
-        Math.cos(p2) *
-        Math.sin(dl / 2) *
-        Math.sin(dl / 2);
+        Math.sin(deltaPhi / 2) *
+        Math.sin(deltaPhi / 2) +
 
-    return R * 2 * Math.atan2(
-        Math.sqrt(a),
-        Math.sqrt(1 - a)
+        Math.cos(phi1) *
+        Math.cos(phi2) *
+
+        Math.sin(deltaLambda / 2) *
+        Math.sin(deltaLambda / 2);
+
+    const c =
+        2 *
+        Math.atan2(
+            Math.sqrt(a),
+            Math.sqrt(1 - a)
+        );
+
+    return earthRadius * c;
+}
+
+
+function calculateBearing(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+) {
+
+    const phi1 =
+        toRadians(lat1);
+
+    const phi2 =
+        toRadians(lat2);
+
+    const lambda1 =
+        toRadians(lon1);
+
+    const lambda2 =
+        toRadians(lon2);
+
+    const y =
+        Math.sin(
+            lambda2 - lambda1
+        ) *
+        Math.cos(phi2);
+
+    const x =
+        Math.cos(phi1) *
+        Math.sin(phi2) -
+
+        Math.sin(phi1) *
+        Math.cos(phi2) *
+        Math.cos(
+            lambda2 - lambda1
+        );
+
+    let bearing =
+        toDegrees(
+            Math.atan2(y, x)
+        );
+
+    bearing =
+        (bearing + 360) % 360;
+
+    return bearing;
+}
+
+
+function rotateArrow(
+    desiredAngle
+) {
+
+    let difference =
+        desiredAngle -
+        (lastArrowAngle % 360);
+
+    if (difference > 180) {
+        difference -= 360;
+    }
+
+    if (difference < -180) {
+        difference += 360;
+    }
+
+    lastArrowAngle +=
+        difference;
+
+    arrow.style.transform =
+        "translate(-50%, -100%) rotate(" +
+        lastArrowAngle +
+        "deg)";
+}
+
+
+function updateArrow() {
+
+    if (phoneHeading === null) {
+        return;
+    }
+
+    const relativeDirection =
+        (
+            targetBearing -
+            phoneHeading +
+            360
+        ) % 360;
+
+    rotateArrow(
+        relativeDirection
     );
 }
 
-function calculateBearing(lat1, lon1, lat2, lon2) {
 
-    const p1 = radians(lat1);
-    const p2 = radians(lat2);
+function updatePosition(
+    position
+) {
 
-    const dl = radians(lon2 - lon1);
+    currentLat =
+        position.coords.latitude;
 
-    const y = Math.sin(dl) * Math.cos(p2);
+    currentLon =
+        position.coords.longitude;
 
-    const x =
-        Math.cos(p1) * Math.sin(p2) -
-        Math.sin(p1) *
-        Math.cos(p2) *
-        Math.cos(dl);
+    const accuracy =
+        position.coords.accuracy;
 
-    return (degrees(Math.atan2(y, x)) + 360) % 360;
-}
 
-function directionName(bearing) {
+    document.getElementById(
+        "currentLat"
+    ).textContent =
+        currentLat.toFixed(6);
 
-    const directions = [
-        "N", "NE", "E", "SE",
-        "S", "SW", "W", "NW"
-    ];
 
-    return directions[
-        Math.round(bearing / 45) % 8
-    ];
-}
+    document.getElementById(
+        "currentLon"
+    ).textContent =
+        currentLon.toFixed(6);
 
-function updatePosition(position) {
 
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
+    document.getElementById(
+        "accuracy"
+    ).textContent =
+        "GPS accuracy: ±" +
+        accuracy.toFixed(1) +
+        " m";
+
 
     const distance =
         calculateDistance(
-            lat,
-            lon,
+            currentLat,
+            currentLon,
             targetLat,
             targetLon
         );
 
-    const bearing =
-        calculateBearing(
-            lat,
-            lon,
-            targetLat,
-            targetLon
-        );
-
-    let distanceText;
 
     if (distance < 1000) {
-        distanceText = Math.round(distance) + " m";
+
+        document.getElementById(
+            "distance"
+        ).textContent =
+            distance.toFixed(1) +
+            " m";
+
     } else {
-        distanceText =
-            (distance / 1000).toFixed(2) + " km";
+
+        document.getElementById(
+            "distance"
+        ).textContent =
+            (
+                distance / 1000
+            ).toFixed(2) +
+            " km";
     }
 
-    document.getElementById("status").innerText =
-        "Navigation active";
 
-    document.getElementById("distance").innerText =
-        distanceText;
+    targetBearing =
+        calculateBearing(
+            currentLat,
+            currentLon,
+            targetLat,
+            targetLon
+        );
 
-    document.getElementById("bearing").innerText =
-        Math.round(bearing) +
-        "° " +
-        directionName(bearing);
 
-    document.getElementById("arrow").style.transform =
-        "rotate(" + bearing + "deg)";
+    document.getElementById(
+        "bearing"
+    ).textContent =
+        targetBearing.toFixed(0) +
+        "°";
 
-    document.getElementById("accuracy").innerText =
-        "GPS accuracy: ±" +
-        Math.round(position.coords.accuracy) +
-        " m";
+
+    updateArrow();
+
+
+    if (phoneHeading === null) {
+
+        status.textContent =
+            "GPS active — waiting for compass...";
+
+    } else {
+
+        status.textContent =
+            "GPS and compass active";
+    }
 }
 
-function locationError(error) {
 
-    document.getElementById("status").innerText =
-        "Unable to obtain your location. Check that location permission is enabled.";
+function positionError(
+    error
+) {
+
+    status.textContent =
+        "Unable to get phone location: " +
+        error.message;
 }
 
-function startNavigation() {
 
-    if (!navigator.geolocation) {
+function processHeading(
+    heading
+) {
 
-        document.getElementById("status").innerText =
-            "GPS location is not supported by this device.";
+    if (
+        heading === null ||
+        typeof heading !== "number" ||
+        isNaN(heading)
+    ) {
+        return;
+    }
+
+    phoneHeading =
+        (heading + 360) % 360;
+
+
+    document.getElementById(
+        "heading"
+    ).textContent =
+        phoneHeading.toFixed(0) +
+        "°";
+
+
+    updateArrow();
+}
+
+
+function orientationHandler(
+    event
+) {
+
+    /*
+        iPhone Safari normally supplies
+        webkitCompassHeading.
+
+        On other compatible devices we
+        use alpha to calculate heading.
+    */
+
+    if (
+        typeof event.webkitCompassHeading
+        === "number"
+    ) {
+
+        processHeading(
+            event.webkitCompassHeading
+        );
 
         return;
     }
 
-    document.getElementById("status").innerText =
-        "Getting your location...";
+
+    if (
+        typeof event.alpha
+        === "number"
+    ) {
+
+        let heading;
+
+        if (event.absolute) {
+
+            heading =
+                360 - event.alpha;
+
+        } else {
+
+            heading =
+                360 - event.alpha;
+        }
+
+        processHeading(
+            heading
+        );
+    }
+}
+
+
+function startGPS() {
+
+    if (
+        !navigator.geolocation
+    ) {
+
+        status.textContent =
+            "Phone GPS is not supported by this browser.";
+
+        return;
+    }
+
 
     navigator.geolocation.watchPosition(
+
         updatePosition,
-        locationError,
+
+        positionError,
+
         {
             enableHighAccuracy: true,
             maximumAge: 0,
@@ -238,6 +679,98 @@ function startNavigation() {
         }
     );
 }
+
+
+async function startNavigation() {
+
+    if (
+        isNaN(targetLat) ||
+        isNaN(targetLon)
+    ) {
+
+        status.textContent =
+            "No valid survey point coordinates were supplied.";
+
+        return;
+    }
+
+
+    /*
+        iPhone / iPad requires the user
+        to grant motion and orientation
+        permission from a button press.
+    */
+
+    if (
+        typeof DeviceOrientationEvent
+        !== "undefined" &&
+
+        typeof DeviceOrientationEvent
+        .requestPermission
+        === "function"
+    ) {
+
+        try {
+
+            const permission =
+                await DeviceOrientationEvent
+                    .requestPermission();
+
+
+            if (
+                permission === "granted"
+            ) {
+
+                window.addEventListener(
+                    "deviceorientation",
+                    orientationHandler,
+                    true
+                );
+
+            } else {
+
+                status.textContent =
+                    "Compass permission was not granted.";
+            }
+
+        } catch (error) {
+
+            status.textContent =
+                "Unable to start the phone compass.";
+        }
+
+    } else {
+
+        window.addEventListener(
+            "deviceorientationabsolute",
+            orientationHandler,
+            true
+        );
+
+        window.addEventListener(
+            "deviceorientation",
+            orientationHandler,
+            true
+        );
+    }
+
+
+    startGPS();
+
+
+    startButton.style.display =
+        "none";
+
+
+    status.textContent =
+        "Starting GPS and compass...";
+}
+
+
+startButton.addEventListener(
+    "click",
+    startNavigation
+);
 
 </script>
 
